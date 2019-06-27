@@ -50,8 +50,9 @@ import lms.envs.common
 # Although this module itself may not use these imported variables, other dependent modules may.
 from lms.envs.common import (
     USE_TZ, TECH_SUPPORT_EMAIL, PLATFORM_NAME, PLATFORM_DESCRIPTION, BUGS_EMAIL, DOC_STORE_CONFIG, DATA_DIR,
-    ALL_LANGUAGES, WIKI_ENABLED, update_module_store_settings, ASSET_IGNORE_REGEX,
-    PARENTAL_CONSENT_AGE_LIMIT, REGISTRATION_EMAIL_PATTERNS_ALLOWED,
+    STATIC_ROOT_BASE, LOG_DIR, LOCAL_LOGLEVEL, CERT_QUEUE, PASSWORD_POLICY_COMPLIANCE_ROLLOUT_CONFIG,
+    ALL_LANGUAGES, WIKI_ENABLED, update_module_store_settings, ASSET_IGNORE_REGEX, BASE_COOKIE_DOMAIN, LOGGING_ENV,
+    PARENTAL_CONSENT_AGE_LIMIT, REGISTRATION_EMAIL_PATTERNS_ALLOWED, REGISTRATION_EXTRA_FIELDS, MAINTENANCE_BANNER_TEXT,
     # The following PROFILE_IMAGE_* settings are included as they are
     # indirectly accessed through the email opt-in API, which is
     # technically accessible through the CMS via legacy URLs.
@@ -65,6 +66,23 @@ from lms.envs.common import (
     # User-uploaded content
     MEDIA_ROOT,
     MEDIA_URL,
+
+    BRANCH_IO_KEY,
+
+    GOOGLE_ANALYTICS_ACCOUNT,
+
+    CREDIT_PROVIDER_SECRET_KEYS,
+
+    AWS_SES_REGION_NAME,
+    AWS_SES_REGION_ENDPOINT,
+
+    CACHES,
+
+    CONTENTSTORE,
+
+    DATABASES,
+
+    ELASTIC_SEARCH_CONFIG,
 
     # Lazy Gettext
     _,
@@ -118,12 +136,22 @@ from lms.envs.common import (
 
     HELP_TOKENS_BOOKS,
 
+    ICP_LICENSE,
+    ICP_LICENSE_INFO,
+
     SUPPORT_SITE_LINK,
     PASSWORD_RESET_SUPPORT_LINK,
     ACTIVATION_EMAIL_SUPPORT_LINK,
+    FEEDBACK_SUBMISSION_EMAIL,
 
     DEFAULT_COURSE_VISIBILITY_IN_CATALOG,
     DEFAULT_MOBILE_AVAILABLE,
+
+    MOBILE_STORE_URLS,
+
+    FOOTER_ORGANIZATION_IMAGE,
+
+    ORA2_FILE_PREFIX,
 
     CONTACT_EMAIL,
 
@@ -133,7 +161,12 @@ from lms.envs.common import (
 
     # Video Image settings
     VIDEO_IMAGE_SETTINGS,
+    VIDEO_IMAGE_MAX_AGE,
     VIDEO_TRANSCRIPTS_SETTINGS,
+    VIDEO_TRANSCRIPTS_MAX_AGE,
+
+    PLATFORM_FACEBOOK_ACCOUNT,
+    PLATFORM_TWITTER_ACCOUNT,
 
     RETIRED_USERNAME_PREFIX,
     RETIRED_USERNAME_FMT,
@@ -333,6 +366,8 @@ SOCIAL_SHARING_SETTINGS = {
     'CUSTOM_COURSE_URLS': False
 }
 
+SOCIAL_MEDIA_FOOTER_URLS = {}
+
 ############################# SET PATH INFORMATION #############################
 PROJECT_ROOT = path(__file__).abspath().dirname().dirname()  # /edx-platform/cms
 REPO_ROOT = PROJECT_ROOT.dirname()
@@ -439,15 +474,18 @@ AUTHENTICATION_BACKENDS = [
     'openedx.core.djangoapps.oauth_dispatch.dot_overrides.backends.EdxRateLimitedAllowAllUsersModelBackend',
 ]
 
-LMS_BASE = None
-LMS_ROOT_URL = "http://localhost:8000"
+LMS_BASE = 'localhost:18000'
+LMS_ROOT_URL = "https://localhost:18000"
 LMS_INTERNAL_ROOT_URL = LMS_ROOT_URL
 LMS_ENROLLMENT_API_PATH = "/api/enrollment/v1/"
 ENTERPRISE_API_URL = LMS_INTERNAL_ROOT_URL + '/enterprise/api/v1/'
 ENTERPRISE_CONSENT_API_URL = LMS_INTERNAL_ROOT_URL + '/consent/api/v1/'
+ENTERPRISE_MARKETING_FOOTER_QUERY_PARAMS = {}
 FRONTEND_LOGIN_URL = LOGIN_URL
 FRONTEND_LOGOUT_URL = lambda settings: settings.LMS_ROOT_URL + '/logout'
 derived('FRONTEND_LOGOUT_URL')
+
+CMS_BASE = 'localhost:18010'
 
 # List of logout URIs for each IDA that the learner should be logged out of when they logout of
 # Studio. Only applies to IDA for which the social auth flow uses DOT (Django OAuth Toolkit).
@@ -467,12 +505,17 @@ CSRF_COOKIE_AGE = 60 * 60 * 24 * 7 * 52
 # end users
 CSRF_COOKIE_SECURE = False
 
+CROSS_DOMAIN_CSRF_COOKIE_DOMAIN = ''
+CROSS_DOMAIN_CSRF_COOKIE_NAME = ''
+
 #################### CAPA External Code Evaluation #############################
 XQUEUE_INTERFACE = {
-    'url': 'http://localhost:8888',
-    'django_auth': {'username': 'local',
-                    'password': 'local'},
-    'basic_auth': None,
+    'url': 'http://localhost:18040',
+    'basic_auth': ['edx', 'edx'],
+    'django_auth': {
+        'username': 'lms',
+        'password': 'password'
+    }
 }
 
 ################################# Middleware ###################################
@@ -625,8 +668,8 @@ MODULESTORE_FIELD_OVERRIDE_PROVIDERS = ()
 #################### Python sandbox ############################################
 
 CODE_JAIL = {
-    # Path to a sandboxed Python executable.  None means don't bother.
-    'python_bin': None,
+    # from https://github.com/edx/codejail/blob/master/codejail/django_integration.py#L24, '' should be same as None
+    'python_bin': '/edx/app/edxapp/venvs/edxapp-sandbox/bin/python',
     # User to run as in the sandbox.
     'user': 'sandbox',
 
@@ -634,8 +677,27 @@ CODE_JAIL = {
     'limits': {
         # How many CPU seconds can jailed code use?
         'CPU': 1,
+        # Limit the memory of the jailed process to something high but not
+        # infinite (512MiB in bytes)
+        'VMEM': 536870912,
+        # Time in seconds that the jailed process has to run.
+        'REALTIME': 3,
+        'PROXY': 0,
+        # Needs to be non-zero so that jailed code can use it as their temp directory.(1MiB in bytes)
+        'FSIZE': 1048576,
     },
 }
+
+# Some courses are allowed to run unsafe code. This is a list of regexes, one
+# of them must match the course id for that course to run unsafe code.
+#
+# For example:
+#
+#   COURSES_WITH_UNSAFE_CODE = [
+#       r"Harvard/XY123.1/.*"
+#   ]
+
+COURSES_WITH_UNSAFE_CODE = []
 
 ############################ DJANGO_BUILTINS ################################
 # Change DEBUG in your environment settings files, not here
@@ -643,12 +705,22 @@ DEBUG = False
 SESSION_COOKIE_SECURE = False
 SESSION_SAVE_EVERY_REQUEST = False
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
-
+SESSION_COOKIE_DOMAIN = ""
+SESSION_COOKIE_NAME = 'sessionid'
 
 # Site info
-SITE_NAME = "localhost:8001"
+SITE_NAME = "localhost"
 HTTPS = 'on'
 ROOT_URLCONF = 'cms.urls'
+
+COURSE_IMPORT_EXPORT_BUCKET = {}
+ALTERNATE_WORKER_QUEUES = 'lms'
+
+STATIC_URL_BASE = '/static/'
+
+X_FRAME_OPTIONS = 'DENY'
+
+GIT_REPO_EXPORT_DIR = '/edx/var/edxapp/export_course_repos'
 
 # Email
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -659,12 +731,18 @@ EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 DEFAULT_FROM_EMAIL = 'registration@example.com'
 DEFAULT_FEEDBACK_EMAIL = 'feedback@example.com'
+TECH_SUPPORT_EMAIL = 'technical@example.com'
+TECH_SUPPORT_EMAIL = 'technical@example.com'
+CONTACT_EMAIL = 'info@example.com'
+BUGS_EMAIL = 'bugs@example.com'
 SERVER_EMAIL = 'devops@example.com'
+UNIVERSITY_EMAIL = 'university@example.com'
+PRESS_EMAIL = 'press@example.com'
 ADMINS = []
 MANAGERS = ADMINS
 
-# Initialize to 'unknown', but read from JSON in production.py
-EDX_PLATFORM_REVISION = 'unknown'
+# Initialize to 'release', but read from JSON in production.py
+EDX_PLATFORM_REVISION = 'release'
 
 # Static content
 STATIC_URL = '/static/studio/'
@@ -688,6 +766,9 @@ LANGUAGE_COOKIE = lms.envs.common.LANGUAGE_COOKIE
 
 LANGUAGES = lms.envs.common.LANGUAGES
 LANGUAGE_DICT = dict(LANGUAGES)
+
+# Languages supported for custom course certificate templates
+CERTIFICATE_TEMPLATE_LANGUAGES = {}
 
 USE_I18N = True
 USE_L10N = True
@@ -944,11 +1025,16 @@ CELERY_CREATE_MISSING_QUEUES = True
 CELERY_DEFAULT_QUEUE = DEFAULT_PRIORITY_QUEUE
 CELERY_DEFAULT_ROUTING_KEY = DEFAULT_PRIORITY_QUEUE
 
-CELERY_QUEUES = {
-    HIGH_PRIORITY_QUEUE: {},
-    DEFAULT_PRIORITY_QUEUE: {}
-}
+CELERY_QUEUES = [
+    'edx.cms.core.default',
+    'edx.cms.core.high',
+    'edx.cms.core.high_mem'
+]
 
+CELERY_BROKER_TRANSPORT = 'amqp'
+CELERY_BROKER_HOSTNAME = 'localhost'
+CELERY_BROKER_USER = 'celery'
+CELERY_BROKER_PASSWORD = 'celery'
 
 ############################## Video ##########################################
 
@@ -1194,7 +1280,8 @@ MKTG_URL_LINK_MAP = {
 
 }
 
-COURSES_WITH_UNSAFE_CODE = []
+SUPPORT_SITE_LINK = ''
+ID_VERIFICATION_SUPPORT_LINK = ''
 
 ############################## EVENT TRACKING #################################
 
@@ -1254,6 +1341,8 @@ EVENT_TRACKING_BACKENDS = {
     }
 }
 EVENT_TRACKING_PROCESSORS = []
+
+EVENT_TRACKING_SEGMENTIO_EMIT_WHITELIST = []
 
 #### PASSWORD POLICY SETTINGS #####
 AUTH_PASSWORD_VALIDATORS = [
@@ -1423,12 +1512,9 @@ ELASTIC_FIELD_MAPPINGS = {
     }
 }
 
-XBLOCK_SETTINGS = {
-    "VideoBlock": {
-        "licensing_enabled": FEATURES.get("LICENSING", False),
-        'YOUTUBE_API_KEY': YOUTUBE_API_KEY
-    }
-}
+XBLOCK_SETTINGS = {}
+XBLOCK_FS_STORAGE_BUCKET = None
+XBLOCK_FS_STORAGE_PREFIX = None
 
 STUDIO_FRONTEND_CONTAINER_URL = None
 
@@ -1471,7 +1557,7 @@ DATABASE_ROUTERS = [
 ############################ OAUTH2 Provider ###################################
 
 # OpenID Connect issuer ID. Normally the URL of the authentication endpoint.
-OAUTH_OIDC_ISSUER = 'https://www.example.com/oauth2'
+OAUTH_OIDC_ISSUER = 'http://127.0.0.1:8000/oauth2'
 
 # 5 minute expiration time for JWT id tokens issued for external API requests.
 OAUTH_ID_TOKEN_EXPIRATION = 5 * 60
@@ -1509,7 +1595,18 @@ ENTERPRISE_CUSTOMER_CATALOG_DEFAULT_CONTENT_FILTER = {}
 
 ############## Settings for the Discovery App ######################
 
-COURSE_CATALOG_API_URL = None
+COURSE_CATALOG_API_URL = 'http://localhost:8008/api/v1'
+
+# which access.py permission name to check in order to determine if a course is visible in
+# the course catalog. We default this to the legacy permission 'see_exists'.
+COURSE_CATALOG_VISIBILITY_PERMISSION = 'see_exists'
+
+# which access.py permission name to check in order to determine if a course about page is
+# visible. We default this to the legacy permission 'see_exists'.
+COURSE_ABOUT_VISIBILITY_PERMISSION = 'see_exists'
+
+DEFAULT_COURSE_VISIBILITY_IN_CATALOG = "both"
+DEFAULT_MOBILE_AVAILABLE = False
 
 ############################# Persistent Grades ####################################
 
@@ -1552,13 +1649,12 @@ VIDEO_IMAGE_ASPECT_RATIO = 16 / 9.0
 VIDEO_IMAGE_ASPECT_RATIO_TEXT = '16:9'
 VIDEO_IMAGE_ASPECT_RATIO_ERROR_MARGIN = 0.1
 
-
 ###################### ZENDESK ######################
-ZENDESK_URL = None
+ZENDESK_URL = ''
 ZENDESK_USER = None
 ZENDESK_API_KEY = None
 ZENDESK_CUSTOM_FIELDS = {}
-
+ZENDESK_OAUTH_ACCESS_TOKEN = ''
 
 ############## Settings for Completion API #########################
 
@@ -1579,3 +1675,109 @@ plugin_settings.add_plugins(__name__, plugin_constants.ProjectType.CMS, plugin_c
 # setting for the FileWrapper class used to iterate over the export file data.
 # See: https://docs.python.org/2/library/wsgiref.html#wsgiref.util.FileWrapper
 COURSE_EXPORT_DOWNLOAD_CHUNK_SIZE = 8192
+
+# E-Commerce API Configuration
+ECOMMERCE_PUBLIC_URL_ROOT = 'http://localhost:8002'
+ECOMMERCE_API_URL = 'http://localhost:8002/api/v2'
+COMMERCE_API_SIGNING_KEY = 'SET-ME-PLEASE'
+
+CREDENTIALS_INTERNAL_SERVICE_URL = 'http://localhost:8005'
+CREDENTIALS_PUBLIC_SERVICE_URL = None
+
+JOURNALS_URL_ROOT = 'https://journals-localhost:18000'
+JOURNALS_API_URL = 'https://journals-localhost:18000/api/v1/'
+
+ANALYTICS_DASHBOARD_URL = 'http://localhost:18110/courses'
+ANALYTICS_DASHBOARD_NAME = 'Your Platform Name Here Insights'
+
+COMMENTS_SERVICE_URL = 'http://localhost:18080'
+COMMENTS_SERVICE_KEY = 'password'
+
+CAS_SERVER_URL = ""
+CAS_EXTRA_LOGIN_PARAMS = ""
+CAS_ATTRIBUTE_CALLBACK = ""
+
+FINANCIAL_REPORTS = {
+    'STORAGE_TYPE': 'localfs',
+    'BUCKET': None,
+    'ROOT_PATH': 'sandbox',
+}
+
+CORS_ORIGIN_WHITELIST = []
+CORS_ORIGIN_ALLOW_ALL = False
+
+LOGIN_REDIRECT_WHITELIST = []
+
+############### Settings for video pipeline ##################
+VIDEO_UPLOAD_PIPELINE = {
+    'BUCKET': '',
+    'ROOT_PATH': '',
+}
+
+DEPRECATED_ADVANCED_COMPONENT_TYPES = []
+
+##### shoppingcart Payment #####
+PAYMENT_SUPPORT_EMAIL = 'billing@example.com'
+
+################################ Bulk Email ###################################
+# Parameters for breaking down course enrollment into subtasks.
+BULK_EMAIL_EMAILS_PER_TASK = 500
+
+# Suffix used to construct 'from' email address for bulk emails.
+# A course-specific identifier is prepended.
+BULK_EMAIL_DEFAULT_FROM_EMAIL = 'no-reply@example.com'
+
+# Flag to indicate if individual email addresses should be logged as they are sent
+# a bulk email message.
+BULK_EMAIL_LOG_SENT_EMAILS = False
+
+################################ Settings for Microsites ################################
+MICROSITE_ROOT_DIR = '/edx/app/edxapp/edx-microsite'
+MICROSITE_CONFIGURATION = {}
+
+############### Settings for django file storage ##################
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+
+###################### Grade Downloads ######################
+# These keys are used for all of our asynchronous downloadable files, including
+# the ones that contain information other than grades.
+GRADES_DOWNLOAD = {
+    'STORAGE_CLASS': 'django.core.files.storage.FileSystemStorage',
+    'STORAGE_KWARGS': {
+        'location': '/tmp/edx-s3/grades',
+    },
+    'STORAGE_TYPE': None,
+    'BUCKET': None,
+    'ROOT_PATH': None,
+}
+
+############### Settings swift #####################################
+SWIFT_USERNAME = None
+SWIFT_KEY = None
+SWIFT_TENANT_ID = None
+SWIFT_TENANT_NAME = None
+SWIFT_AUTH_URL = None
+SWIFT_AUTH_VERSION = None
+SWIFT_REGION_NAME = None
+SWIFT_USE_TEMP_URLS = None
+SWIFT_TEMP_URL_KEY = None
+SWIFT_TEMP_URL_DURATION = 1800  # seconds
+
+############### The SAML private/public key values ################
+SOCIAL_AUTH_SAML_SP_PRIVATE_KEY = ""
+SOCIAL_AUTH_SAML_SP_PUBLIC_CERT = ""
+SOCIAL_AUTH_SAML_SP_PRIVATE_KEY_DICT = {}
+SOCIAL_AUTH_SAML_SP_PUBLIC_CERT_DICT = {}
+
+############### Settings for facebook ##############################
+FACEBOOK_APP_ID = 'FACEBOOK_APP_ID'
+FACEBOOK_APP_SECRET = 'FACEBOOK_APP_SECRET'
+FACEBOOK_API_VERSION = 'v2.1'
+
+### Proctoring configuration (redirct URLs and keys shared between systems) ####
+PROCTORING_BACKENDS = {
+    'DEFAULT': 'null',
+    # The null key needs to be quoted because
+    # null is a language independent type in YAML
+    'null': {}
+}

@@ -37,6 +37,7 @@ from lms.envs.test import (
     JWT_AUTH,
     REGISTRATION_EXTRA_FIELDS,
     ECOMMERCE_API_URL,
+    GRADES_DOWNLOAD,
 )
 
 

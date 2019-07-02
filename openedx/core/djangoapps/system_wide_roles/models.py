@@ -16,7 +16,8 @@ class SystemWideRole(UserRole):  # pylint: disable=model-missing-unicode
         """
         Return human-readable string representation.
         """
-        return "<SystemWideRole {role}>".format(role=self.name)
+        str_representation = "<SystemWideRole {role}>"
+        return str_representation.format(role=self.name)
 
     def __repr__(self):
         """
@@ -37,7 +38,8 @@ class SystemWideRoleAssignment(UserRoleAssignment):  # pylint: disable=model-mis
         """
         Return human-readable string representation.
         """
-        return "<SystemWideRoleAssignment for User {user} assigned to role {role}>".format(
+        str_representation = "<SystemWideRoleAssignment for User {user} assigned to role {role}>"
+        return str_representation.format(
             user=self.user.id,
             role=self.role.name
         )

@@ -5894,7 +5894,7 @@ schematic = (function() {
 	PFet.prototype.constructor = PFet;
 
 	PFet.prototype.toString = function() {
-	    return edx.StringUtil.interpolate('<PFet {W_L} ({x}, {y})>',
+	    return edx.StringUtils.interpolate('<PFet {W_L} ({x}, {y})>',
 	    {
 		W_L: this.properties['W/L'],
 		x: this.x,

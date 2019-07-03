@@ -713,7 +713,7 @@ SITE_NAME = "localhost"
 HTTPS = 'on'
 ROOT_URLCONF = 'cms.urls'
 
-COURSE_IMPORT_EXPORT_BUCKET = {}
+COURSE_IMPORT_EXPORT_BUCKET = ''
 ALTERNATE_WORKER_QUEUES = 'lms'
 
 STATIC_URL_BASE = '/static/'
@@ -731,7 +731,6 @@ EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 DEFAULT_FROM_EMAIL = 'registration@example.com'
 DEFAULT_FEEDBACK_EMAIL = 'feedback@example.com'
-TECH_SUPPORT_EMAIL = 'technical@example.com'
 TECH_SUPPORT_EMAIL = 'technical@example.com'
 CONTACT_EMAIL = 'info@example.com'
 BUGS_EMAIL = 'bugs@example.com'
@@ -768,7 +767,10 @@ LANGUAGES = lms.envs.common.LANGUAGES
 LANGUAGE_DICT = dict(LANGUAGES)
 
 # Languages supported for custom course certificate templates
-CERTIFICATE_TEMPLATE_LANGUAGES = {}
+CERTIFICATE_TEMPLATE_LANGUAGES = {
+    'en': 'English',
+    'es': 'Español',
+}
 
 USE_I18N = True
 USE_L10N = True
@@ -1028,7 +1030,6 @@ CELERY_DEFAULT_ROUTING_KEY = DEFAULT_PRIORITY_QUEUE
 CELERY_QUEUES = [
     'edx.cms.core.default',
     'edx.cms.core.high',
-    'edx.cms.core.high_mem'
 ]
 
 CELERY_BROKER_TRANSPORT = 'amqp'
@@ -1679,7 +1680,7 @@ COURSE_EXPORT_DOWNLOAD_CHUNK_SIZE = 8192
 # E-Commerce API Configuration
 ECOMMERCE_PUBLIC_URL_ROOT = 'http://localhost:8002'
 ECOMMERCE_API_URL = 'http://localhost:8002/api/v2'
-COMMERCE_API_SIGNING_KEY = 'SET-ME-PLEASE'
+ECOMMERCE_API_SIGNING_KEY = 'SET-ME-PLEASE'
 
 CREDENTIALS_INTERNAL_SERVICE_URL = 'http://localhost:8005'
 CREDENTIALS_PUBLIC_SERVICE_URL = None

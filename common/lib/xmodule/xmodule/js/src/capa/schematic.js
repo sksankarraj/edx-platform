@@ -5219,8 +5219,8 @@ schematic = (function() {
 	}
 	Wire.prototype = new Component();
 	Wire.prototype.constructor = Wire;
-
-	Wire.prototype.toString = function() {
+    
+        Wire.prototype.toString = function() {
 	    return edx.StringUtils.interpolate(
 		'<Wire ({x}, {y}) ({x_plus_dx}, {y_plus_dx})>',
 		{
@@ -5228,8 +5228,8 @@ schematic = (function() {
 		    y: this.y,
 		    x_plus_dx: this.x + this.dx,
 		    y_plus_dx: this.y + this.dx
-		})
-	};
+		});
+	}
 
 	// return connection point at other end of wire from specified cp
 	Wire.prototype.other_end = function(cp) {

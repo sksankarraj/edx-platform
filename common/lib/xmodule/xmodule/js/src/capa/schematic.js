@@ -6002,7 +6002,7 @@ schematic = (function() {
 
 	Source.prototype.toString = function() {
 	    return edx.StringUtils.interpolate(
-		'<{type}source {params} {params} ({x}, {y})>',
+		'<{type}source {params} ({x}, {y})>',
 		{
 		    type: this.type,
 		    params: this.properties['params'],

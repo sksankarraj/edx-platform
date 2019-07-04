@@ -5222,12 +5222,12 @@ schematic = (function() {
     
         Wire.prototype.toString = function() {
 	    return edx.StringUtils.interpolate(
-		'<Wire ({x}, {y}) ({x_plus_dx}, {y_plus_dx})>',
+		'<Wire ({x}, {y}) ({x_plus_dx}, {y_plus_dy})>',
 		{
 		    x: this.x,
 		    y: this.y,
 		    x_plus_dx: this.x + this.dx,
-		    y_plus_dx: this.y + this.dx
+		    y_plus_dy: this.y + this.dy
 		});
 	}
 

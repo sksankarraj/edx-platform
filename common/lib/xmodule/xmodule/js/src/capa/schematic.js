@@ -5099,7 +5099,7 @@ schematic = (function() {
 	}
 
 	ConnectionPoint.prototype.toString = function() {
-	    return edx.StringUtils.interpolate('<ConnectionPoint ({offset_x}, {offset_y}) {parent}>',
+	    return edx.StringUtils.interpolate('<ConnectionPoint ({offset_x},{offset_y}) {parent}>',
 	    {
 		offset_x: this.offset_x,
 		offset_y: this.offset_y,
@@ -5222,7 +5222,7 @@ schematic = (function() {
     
         Wire.prototype.toString = function() {
 	    return edx.StringUtils.interpolate(
-		'<Wire ({x}, {y}) ({x_plus_dx}, {y_plus_dy})>',
+		'<Wire ({x},{y}) ({x_plus_dx},{y_plus_dy})>',
 		{
 		    x: this.x,
 		    y: this.y,
@@ -5342,7 +5342,7 @@ schematic = (function() {
 
 	Ground.prototype.toString = function() {
 	    return edx.StringUtils.interpolate(
-		'<Ground ({x}, {y})>',
+		'<Ground ({x},{y})>',
 		{
 		    x: this.x,
 		    y: this.y
@@ -5388,7 +5388,7 @@ schematic = (function() {
 
 	Label.prototype.toString = function() {
 	    return edx.StringUtils.interpolate(
-		'<Label ({x}, {y})>',
+		'<Label ({x},{y})>',
 		{
 		    x: this.x,
 		    y: this.y
@@ -5442,7 +5442,7 @@ schematic = (function() {
 
 	Probe.prototype.toString = function() {
 	    return edx.StringUtils.interpolate(
-		'<Probe ({x}, {y})>',
+		'<Probe ({x},{y})>',
 		{
 		    x: this.x,
 		    y: this.y
@@ -5526,7 +5526,7 @@ schematic = (function() {
 
 	Ammeter.prototype.toString = function() {
 	    return edx.StringUtils.interpolate(
-		'<Ammeter ({x}, {y})>',
+		'<Ammeter ({x},{y})>',
 		{
 		    x: this.x,
 		    y: this.y
@@ -5625,7 +5625,7 @@ schematic = (function() {
 
 	Resistor.prototype.toString = function() {
 	    return edx.StringUtils.interpolate(
-		'<Resistor {r} ({x}, {y})>',
+		'<Resistor {r} ({x},{y})>',
 		{
 		    r: this.properties['r'],
 		    x: this.x,
@@ -5674,7 +5674,7 @@ schematic = (function() {
 
 	Capacitor.prototype.toString = function() {
 	    return edx.StringUtils.interpolate(
-		'<Capacitor {r} ({x}, {y})>',
+		'<Capacitor {r} ({x},{y})>',
 		{
 		    r: this.properties['r'],
 		    x: this.x,
@@ -5718,7 +5718,7 @@ schematic = (function() {
 
 	Inductor.prototype.toString = function() {
 	    return edx.StringUtils.interpolate(
-		'<Inductor {l}, ({x}, {y})>',
+		'<Inductor {l}, ({x},{y})>',
 		{
 		    l: this.properties['l'],
 		    x: this.x,
@@ -5767,7 +5767,7 @@ schematic = (function() {
 
 	Diode.prototype.toString = function() {
 	    return edx.StringUtils.interpolate(
-		'<Diode {area} ({x}, {y})>',
+		'<Diode {area} ({x},{y})>',
 		{
 		    area: this.properties['area'],
 		    x: this.x,
@@ -5844,7 +5844,7 @@ schematic = (function() {
 
 	NFet.prototype.toString = function() {
 	    return edx.StringUtils.interpolate(
-		'<NFet {W_L} ({x}, {y})>',
+		'<NFet {W_L} ({x},{y})>',
 		{
 		    W_L: this.properties['W/L'],
 		    x: this.x,
@@ -5894,7 +5894,7 @@ schematic = (function() {
 	PFet.prototype.constructor = PFet;
 
 	PFet.prototype.toString = function() {
-	    return edx.StringUtils.interpolate('<PFet {W_L} ({x}, {y})>',
+	    return edx.StringUtils.interpolate('<PFet {W_L} ({x},{y})>',
 	    {
 		W_L: this.properties['W/L'],
 		x: this.x,
@@ -5947,7 +5947,7 @@ schematic = (function() {
 
 	OpAmp.prototype.toString = function() {
 	    return edx.StringUtils.interpolate(
-		'<OpAmp{A} ({x}, {y})>',
+		'<OpAmp{A} ({x},{y})>',
 		{
 		    A: this.properties['A'],
 		    x: this.x,
@@ -6002,7 +6002,7 @@ schematic = (function() {
 
 	Source.prototype.toString = function() {
 	    return edx.StringUtils.interpolate(
-		'<{type}source {params} ({x}, {y})>',
+		'<{type}source {params} ({x},{y})>',
 		{
 		    type: this.type,
 		    params: this.properties['params'],

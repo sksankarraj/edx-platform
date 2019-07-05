@@ -5103,7 +5103,7 @@ schematic = (function() {
 	    {
 		offset_x: this.offset_x,
 		offset_y: this.offset_y,
-		edx.HtmlUtils.HTML(parent: this.parent.toString())
+		parent: edx.HtmlUtils.HTML(this.parent.toString())
 	    });
 	}
 

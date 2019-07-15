@@ -2,19 +2,70 @@
 
 .content-wrapper {
   max-width: map-get($container-max-widths, xl);
-  margin-top: $baseline;
   padding: 0 0 $baseline/2;
 
   @include media-breakpoint-up(md) {
     padding: 0 $baseline $baseline/2;
   }
 
+  margin-left: 0;
+  margin-right: 0;
+  width: 100%;
+  margin: 0 auto;
+  margin-top: $baseline;
+
+  @media print {
+    padding-bottom: 0;
+  }
   .course-tabs {
     padding: 0;
     font-size: $font-size-sm;
     overflow-x: scroll;
     overflow-y: hidden;
     white-space: nowrap;
+    @include border-top-radius(4px);
+    @include clearfix();
+    padding: ($baseline*0.75) 0 ($baseline*0.75) 0;
+    @extend %cont-no-list;
+    
+    .tab {
+      display: inline-block;
+      list-style: none;
+
+      &.prominent {
+        @include margin-right(16px);
+
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 3px;
+      }
+
+      &.prominent + li {
+        @include padding-left($baseline*0.75);
+        @include border-left(1px solid $gray-d3);
+      }
+
+      a,
+      a:visited {
+        @include padding(($baseline/2), ($baseline*0.75), 13px, ($baseline*0.75));
+
+        @extend %t-title7;
+        @extend %t-regular;
+
+        color: theme-color("dark");
+        display: block;
+        text-align: center;
+        text-decoration: none;
+        border-bottom: 4px hidden theme-color("primary");
+
+        &:hover,
+        &:focus,
+        &.active {
+          color: theme-color("primary");
+          border-bottom-style: solid;
+          background-color: transparent;
+        }
+      }
+    }
 
     .navbar-nav {
       display: flex;

@@ -13,3 +13,9 @@ $baseline: 20px !default;
 $header-logo-width: 60px !default;
 $header-logo-height: 40px !default;
 $header-user-image-size: 40px !default;
+
+// ----------------------------
+// #COLORS
+// ----------------------------
+$gray: rgb(127, 127, 127) !default;
+$gray-d3:   shade($gray, 60%) !default;
